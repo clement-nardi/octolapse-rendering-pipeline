@@ -6,7 +6,6 @@ cd ${SCRIPT_DIR}
 
 rsync -azv -h --progress pi@octopi:.octoprint/data/octolapse/snapshot_archive .
 
-
 for zip_file in $(cd snapshot_archive; ls *.zip) ; do
 
 	if ! grep "$zip_file" done.txt ; then
@@ -34,15 +33,17 @@ for zip_file in $(cd snapshot_archive; ls *.zip) ; do
 
 		echo "JPG dimensions: ${width}x${height}"
 
+		base_encode_command="ffmpeg -f concat -i workdir/list.txt -c:v libx265 -crf ${CRF} -preset ${preset} -pix_fmt yuv420p"
+
 		if [ ${height} -gt ${target_height} ] ; then
 			let target_width=$width*${target_height}/${height}/2*2
 			echo " -> Redusing to 4k: ${target_width}x${target_height}"
 
-			ffmpeg -f concat -i workdir/list.txt -vf scale=${target_width}:${target_height} -c:v libx265 -crf ${CRF} -preset ${preset} -pix_fmt yuv420p ${title}_4k.mkv
-			ffmpeg -f concat -i workdir/list.txt -vf crop=${target_width}:${target_height} -c:v libx265 -crf ${CRF} -preset ${preset} -pix_fmt yuv420p ${title}_4k_crop.mkv
+			for resize_method in scale crop ; do
+				${base_encode_command} -vf ${resize_method}=${target_width}:${target_height} ${title}_4k_${resize_method}.mp4
+			done
 		else
-			
-			ffmpeg -f concat -i workdir/list.txt -c:v libx265 -crf ${CRF} -preset ${preset} -pix_fmt yuv420p ${title}_${width}x${height}.mkv
+			${base_encode_command} ${title}_${width}x${height}.mp4
 		fi
 		
 		if ls ${title}*.mkv ; then
