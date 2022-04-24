@@ -1,0 +1,7 @@
+*.mkv
+*.mp4
+snapshot*
+Videos
+workdir
+done.txt
+.directory
