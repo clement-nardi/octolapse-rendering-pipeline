@@ -4,6 +4,7 @@
 function encode() {
 	filename=${@: -1}
 	if [ -f $filename ] ; then
+		# return 0
 		rm $filename
 	fi
 	$@
@@ -70,6 +71,7 @@ for zip_file in ${remote_zip_files} ; do
 		encode_OK=true
 
 		mkdir -p ${target_folder}
+		touch -a -m -t ${timestamp} ${target_folder}
 
 		if [ ${height} -gt ${target_height} ] ; then
 			let target_width=$width*${target_height}/${height}/2*2
