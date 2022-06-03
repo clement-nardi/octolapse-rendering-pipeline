@@ -35,8 +35,8 @@ for zip_file in ${remote_zip_files} ; do
 		local_zip_file=./snapshot_archive/${zip_file}
 		local_extracted=./images/${title}
 
+		# TODO: make sure script cannot run in parallel
 		if [ ! -d ${local_extracted} ] ; then
-			mkdir -p ${local_extracted}
 			echo "Need to extract zip file locally"
 			if [ ! -f ${local_zip_file} ] ; then
 				echo "Downloading zip file"
@@ -45,7 +45,16 @@ for zip_file in ${remote_zip_files} ; do
 				echo "Zip file already downloaded"
 			fi
 			echo "Extracting"
+			mkdir -p ${local_extracted}
 			unzip ${local_zip_file} -d ${local_extracted}
+
+			if ! ls ${local_extracted}/*/*/*.jpg > /dev/null ; then
+				echo "Problem extracting zip file..."
+				echo "Here is the extracted data:"
+				tree ${local_extracted}
+				rm -rf ${local_extracted}
+				continue
+			fi
 		fi
 		
 		rename "s/ /_/g" ${local_extracted}/*/*/*.jpg
